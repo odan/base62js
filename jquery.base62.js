@@ -1,7 +1,7 @@
 /**
  * Base62 Encoding JavaScript implementation
  * 
- * @author digimax (molengo.com)
+ * @author odan (https://github.com/odan)
  * @license: MIT
  * 
  * Thanks to: renmengye
