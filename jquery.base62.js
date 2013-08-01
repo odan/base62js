@@ -269,10 +269,11 @@ go.string.decodeBase62ToArray = function decodeBase62ToArray(base62) {
  * @returns {String}
  */
 go.string.encodeBase62 = function encodeBase62(str) {
-
-    if (typeof str === 'undefined' || str === null || str === '') {
+    
+    if (typeof str !== 'string' || str === '') {
         return '';
     }
+    
     str = str.toString();
 
     var bytes = [];
@@ -291,10 +292,11 @@ go.string.encodeBase62 = function encodeBase62(str) {
  * The returned data may be binary.
  */
 go.string.decodeBase62 = function decodeBase62(str) {
-
-    if (typeof str === 'undefined' || str === null || str === '') {
+    
+    if (typeof str !== 'string' || str === '') {
         return '';
     }
+    
     str = str.toString();
 
     var bytes = this.decodeBase62ToArray(str);
@@ -305,48 +307,6 @@ go.string.decodeBase62 = function decodeBase62(str) {
     str = sb.join('');
     return str;
 };
-
-/**
- * Unit Test
- * @returns {Boolean}
- */
-go.string.testBase62 = function testBase62() {
-    
-    var bytes = [116, 32, 8, 99, 100, 232, 4, 7];
-
-    // T208OsJe107
-    var s = go.string.encodeBase62ToString(bytes);
-    console.log(s === 'T208OsJe107' ? 'OK': 'ERROR');
-    
-    var b = go.string.decodeBase62ToArray(s);
-    console.log(b.toString() === bytes.toString() ? 'OK': 'ERROR');
-
-    s = go.string.encodeBase62('test123');
-    console.log(s === 'T6LpT34oC3' ? 'OK': 'ERROR');
-
-    var t = go.string.decodeBase62(s);
-    console.log(t);
-
-    var s255 = '';
-    for (var i = 0; i <= 255; i++) {
-        s255 += String.fromCharCode(i);
-    }
-
-    s = go.string.encodeBase62(s255);
-    console.log(s);
-
-    var t = go.string.decodeBase62(s);
-    console.log(t);
-
-    var boolReturn = (t === s255);
-    if (boolReturn) {
-        console.log('OK');
-    } else {
-        console.log('ERROR');
-    }
-    return boolReturn;
-};
-
 
 /**
  * jQuery Plugin - Base62 Encoding
