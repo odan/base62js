@@ -1,0 +1,380 @@
+/**
+ * Base62 Encoding JavaScript implementation
+ * 
+ * @author digimax (molengo.com)
+ * @license: MIT
+ * 
+ * Thanks to: renmengye
+ * https://github.com/renmengye/base62-csharp
+ * 
+ * @example 
+ * 
+ * // encode
+ * var strBase62 = go.string.encodeBase62('test123');
+ * console.log(strBase62);
+ * 
+ * // decode
+ * var strText = go.string.decodeBase62(strBase62);
+ * console.log(strText);
+ * 
+ */
+
+// Namespace stuff
+if (!go) {
+    var go = {};
+}
+
+if (!go.string) {
+    go.string = {};
+}
+
+
+/**
+ * Utility that read and write bits in byte array
+ * @param {type} options
+ * @returns {BitStream}
+ */
+go.string.BitStream = function BitStream(options) {
+    this.Source = [];
+
+    if (typeof options === 'object') {
+        // Initialize the stream with a source byte array
+        this.Source = options;
+    }
+
+    if (typeof options === 'number') {
+        // Initialize the stream with capacity
+        var dim = Math.floor(options);
+        this.Source = new Array(dim);
+    }
+
+    // Bit position of the stream
+    this.Position = 0;
+
+    /**
+     * Bit length of the stream
+     * @returns {Number|@pro;length@this.Source}
+     */
+    this.Length = function() {
+        return this.Source.length * 8;
+    };
+
+    /**
+     * Read the stream to the buffer
+     * @param {Array} buffer Buffer
+     * @param {integer} offset Offset bit start position of the stream
+     * @param {integer} count Number of bits to read
+     * @returns {integer} Number of bits read
+     */
+    this.Read = function(buffer, offset, count) {
+        // Temporary position cursor
+        var tempPos = this.Position;
+        tempPos += offset;
+        // Buffer byte position and in-byte position
+        var readPosCount = 0;
+        var readPosMod = 0;
+        // Stream byte position and in-byte position
+        var posCount = tempPos >> 3;
+        var posMod = (tempPos - ((tempPos >> 3) << 3));
+        while (tempPos < this.Position + offset + count && tempPos < this.Length()) {
+            // Copy the bit from the stream to buffer
+            if (((this.Source[posCount]) & (0x1 << (7 - posMod))) != 0) {
+                buffer[readPosCount] = ((buffer[readPosCount]) | (0x1 << (7 - readPosMod)));
+            } else {
+                buffer[readPosCount] = ((buffer[readPosCount]) & (0xffffffff - (0x1 << (7 - readPosMod))));
+            }
+
+            // Increment position cursors
+            tempPos++;
+            if (posMod == 7) {
+                posMod = 0;
+                posCount++;
+            } else {
+                posMod++;
+            }
+            if (readPosMod == 7) {
+                readPosMod = 0;
+                readPosCount++;
+            } else {
+                readPosMod++;
+            }
+        }
+        var bits = (tempPos - this.Position - offset);
+        this.Position = tempPos;
+        return bits;
+    };
+
+    /**
+     * Set up the stream position
+     * @param {integer} offset Position
+     * @param {integer} origin Position origin
+     * @returns {integer} Position after setup
+     */
+    this.Seek = function(offset, origin) {
+        switch (origin) {
+            case (1):
+                /*SeekOrigin.Begin*/ {
+                    this.Position = offset;
+                    break;
+                }
+            case (2):
+                /*SeekOrigin.Current*/ {
+                    this.Position += offset;
+                    break;
+                }
+            case (3):
+                /*SeekOrigin.End*/ {
+                    this.Position = this.Length() + offset;
+                    break;
+                }
+        }
+        return this.Position;
+    };
+
+    /**
+     * Write from buffer to the stream
+     * @param {type} buffer
+     * @param {type} offset Offset start bit position of buffer
+     * @param {type} count
+     * @returns {undefined} Number of bits
+     */
+    this.Write = function(buffer, offset, count) {
+        // Temporary position cursor
+        var tempPos = this.Position;
+        // Buffer byte position and in-byte position
+        var readPosCount = offset >> 3,
+                readPosMod = offset - ((offset >> 3) << 3);
+        // Stream byte position and in-byte position
+        var posCount = tempPos >> 3;
+        var posMod = (tempPos - ((tempPos >> 3) << 3));
+        while (tempPos < this.Position + count && tempPos < this.Length()) {
+            // Copy the bit from buffer to the stream
+            if (((buffer[readPosCount]) & (0x1 << (7 - readPosMod))) != 0) {
+                this.Source[posCount] = ((this.Source[posCount]) | (0x1 << (7 - posMod)));
+            } else {
+                this.Source[posCount] = ((this.Source[posCount]) & (0xffffffff - (0x1 << (7 - posMod))));
+            }
+
+            // Increment position cursors
+            tempPos++;
+            if (posMod == 7) {
+                posMod = 0;
+                posCount++;
+            } else {
+                posMod++;
+            }
+            if (readPosMod == 7) {
+                readPosMod = 0;
+                readPosCount++;
+            } else {
+                readPosMod++;
+            }
+        }
+        this.Position = tempPos;
+    };
+};
+
+
+/**
+ * Base62 Coding Space
+ * @type String
+ */
+go.string.Base62CodingSpace = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+/**
+ * Convert a byte array
+ * @param {String} original Byte array
+ * @returns {unresolved} Base62 string
+ */
+go.string.encodeBase62ToString = function encodeBase62ToString(original) {
+    var sb = []; // new StringBuilder();
+    var stream = new go.string.BitStream(original); // Set up the BitStream
+    var read = []; // Only read 6-bit at a time
+    read.push(0);
+
+    while (true) {
+        read[0] = 0;
+
+        var length = stream.Read(read, 0, 6); // Try to read 6 bits
+        if (length == 6) // Not reaching the end
+        {
+            if ((read[0] >> 3) == 0x1f) // First 5-bit is 11111
+            {
+                sb.push(go.string.Base62CodingSpace[61]);
+                stream.Seek(-1, 2 /*SeekOrigin.Current*/); // Leave the 6th bit to next group
+            } else if ((read[0] >> 3) == 0x1e) // First 5-bit is 11110
+            {
+                sb.push(go.string.Base62CodingSpace[60]);
+                stream.Seek(-1, 2 /*SeekOrigin.Current*/);
+            } else // Encode 6-bit
+            {
+                sb.push(go.string.Base62CodingSpace[(read[0] >> 2)]);
+            }
+        } else {
+            // Padding 0s to make the last bits to 6 bit
+            sb.push(go.string.Base62CodingSpace[(read[0] >> (8 - length))]);
+            break;
+        }
+    }
+    var str = sb.join('');
+    return str;
+};
+
+/**
+ * Convert a Base62 string to byte array
+ * @param {type} base62 Base62 string
+ * @returns {Array} Byte array
+ */
+go.string.decodeBase62ToArray = function decodeBase62ToArray(base62) {
+    // Character count
+    var count = 0;
+
+    // Set up the BitStream
+    var stream = new go.string.BitStream(base62.length * 6 / 8);
+
+    for (var i in base62) {
+        var c = base62[i];
+        // Look up coding table
+        var index = go.string.Base62CodingSpace.indexOf(c);
+
+        // If end is reached
+        if (count == base62.length - 1) {
+            // Check if the ending is good
+            var mod = (stream.Position % 8);
+            stream.Write([(index << (mod))], 0, 8 - mod);
+        } else {
+            // If 60 or 61 then only write 5 bits to the stream, otherwise 6 bits.
+            if (index == 60) {
+                //stream.Write(new byte[] { 0xf0 }, 0, 5);
+                stream.Write([0xf0], 0, 5);
+            } else if (index == 61) {
+                stream.Write([0xf8], 0, 5);
+            } else {
+                stream.Write([index], 2, 6);
+            }
+        }
+        count++;
+    }
+
+    // Dump out the bytes
+    var result = new Array(stream.Position / 8);
+    stream.Seek(0, 1 /* SeekOrigin.Begin*/);
+    stream.Read(result, 0, result.length * 8);
+    return result;
+};
+
+/**
+ * Encodes data with base62
+ * @param {String} str The data to encode.
+ * @returns {String}
+ */
+go.string.encodeBase62 = function encodeBase62(str) {
+
+    if (typeof str === 'undefined' || str === null || str === '') {
+        return '';
+    }
+    str = str.toString();
+
+    var bytes = [];
+    for (var i in str) {
+        bytes.push(str.charCodeAt(i));
+    }
+
+    var strReturn = this.encodeBase62ToString(bytes);
+    return strReturn;
+};
+
+/**
+ * Decodes a base62 encoded data.
+ * @param {String} str
+ * @returns {String} Returns the original data or false on failure. 
+ * The returned data may be binary.
+ */
+go.string.decodeBase62 = function decodeBase62(str) {
+
+    if (typeof str === 'undefined' || str === null || str === '') {
+        return '';
+    }
+    str = str.toString();
+
+    var bytes = this.decodeBase62ToArray(str);
+    var sb = [];
+    for (var i in bytes) {
+        sb.push(String.fromCharCode(bytes[i]));
+    }
+    str = sb.join('');
+    return str;
+};
+
+/**
+ * Unit Test
+ * @returns {Boolean}
+ */
+go.string.testBase62 = function testBase62() {
+    
+    var bytes = [116, 32, 8, 99, 100, 232, 4, 7];
+
+    // T208OsJe107
+    var s = go.string.encodeBase62ToString(bytes);
+    console.log(s === 'T208OsJe107' ? 'OK': 'ERROR');
+    
+    var b = go.string.decodeBase62ToArray(s);
+    console.log(b.toString() === bytes.toString() ? 'OK': 'ERROR');
+
+    s = go.string.encodeBase62('test123');
+    console.log(s === 'T6LpT34oC3' ? 'OK': 'ERROR');
+
+    var t = go.string.decodeBase62(s);
+    console.log(t);
+
+    var s255 = '';
+    for (var i = 0; i <= 255; i++) {
+        s255 += String.fromCharCode(i);
+    }
+
+    s = go.string.encodeBase62(s255);
+    console.log(s);
+
+    var t = go.string.decodeBase62(s);
+    console.log(t);
+
+    var boolReturn = (t === s255);
+    if (boolReturn) {
+        console.log('OK');
+    } else {
+        console.log('ERROR');
+    }
+    return boolReturn;
+};
+
+
+/**
+ * jQuery Plugin - Base62 Encoding
+ * 
+ * @example 
+ * var strBase62 = $.encodeBase62('test123');
+ * var strText = $.decodeBase62(strBase62);
+ */
+(function($) {
+
+    /**
+     * Encodes data with base62
+     * @param {String} str The data to encode.
+     * @returns {String}
+     */
+    $.encodeBase62 = function encodeBase62(str) {
+        return go.string.encodeBase62(str);
+    };
+
+    /**
+     * Decodes a base62 encoded data.
+     * @param {String} str
+     * @returns {String} Returns the original data or false on failure. 
+     * The returned data may be binary.
+     */
+    $.decodeBase62 = function decodeBase62(str) {
+        return go.string.decodeBase62(str);
+    };
+
+
+})(jQuery);

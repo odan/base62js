@@ -1,0 +1,36 @@
+﻿{
+    "name": "base62js",
+    "version": "1.0.0",
+    "title": "Base62 encode/decode",
+    "author": {
+        "name": "Daniel Opitz",
+        "url": "https://github.com/odan"
+    },
+    "licenses": [
+        {
+            "type": "MIT",
+            "url": "https://raw.github.com/orsozed/JQuery-Plugins/master/license/MIT-LICENSE.txt"
+        },
+        {
+            "type": "GPLv2",
+            "url": "https://raw.github.com/orsozed/JQuery-Plugins/master/license/GPL-LICENSE.txt"
+        }
+    ],
+    "dependencies": {
+        "jquery": ">=1.6"
+    },
+    "description": "This plug-in is a Base62 Encoding JavaScript implementation.",
+    "keywords": [
+        "base62",
+        "encode",
+		"decode",
+		"base64"
+    ],
+    "homepage": "https://github.com/odan/base64js.jquery.plugin",
+    "maintainers": [
+        {
+            "name": "Daniel Opitz",
+            "url": "https://github.com/odan"
+        }
+    ]
+}
