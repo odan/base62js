@@ -26,7 +26,7 @@
 		"decode",
 		"base64"
     ],
-    "homepage": "https://github.com/odan/base64js.jquery.plugin",
+    "homepage": "https://github.com/odan/base62js",
     "maintainers": [
         {
             "name": "Daniel Opitz",
