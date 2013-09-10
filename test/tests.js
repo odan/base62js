@@ -36,6 +36,14 @@ test256();
 
 function testBytes()
 {
+    
+    var bytes1 = [0x53, 0xFE, 0x92];
+    var s1 = go.string.encodeBase62ToString(bytes1);
+    
+    test("encode arrray to string", function() {
+        ok(s1 === 'Kzya2', "OK");
+    });
+    
     var bytes = [116, 32, 8, 99, 100, 232, 4, 7];
 
     // T208OsJe107
