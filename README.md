@@ -20,9 +20,9 @@ Example
 =============
 
     // encode
-    var strBase62 = $.encodeBase62('test123');
+    var strBase62 = $d.encodeBase62('test123');
     console.log(strBase62); // T6LpT34oC3
 
     // decode
-    var strText = $.decodeBase62(strBase62);
+    var strText = $d.decodeBase62(strBase62);
     console.log(strText); // test123
