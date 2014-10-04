@@ -4,11 +4,8 @@ base62js
 Base62 Encoding JavaScript implementation
 
 Encodes string to to base62 string.
-
 Decodes base62 string to string.
-
 Encodes byte array to base62 string.
-
 Decodes base62 string to byte array.
 
 This is a port from C# to JavaScript
