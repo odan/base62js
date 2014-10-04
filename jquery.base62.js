@@ -10,22 +10,18 @@
  * @example 
  * 
  * // encode
- * var strBase62 = go.string.encodeBase62('test123');
+ * var strBase62 = $d.encodeBase62('test123');
  * console.log(strBase62);
  * 
  * // decode
- * var strText = go.string.decodeBase62(strBase62);
+ * var strText = $d.decodeBase62(strBase62);
  * console.log(strText);
  * 
  */
 
 // Namespace stuff
-if (!go) {
-    var go = {};
-}
-
-if (!go.string) {
-    go.string = {};
+if (!$d) {
+    var $d = {};
 }
 
 
@@ -34,7 +30,7 @@ if (!go.string) {
  * @param {type} options
  * @returns {BitStream}
  */
-go.string.BitStream = function BitStream(options) {
+$d.BitStream = function BitStream(options) {
     this.Source = [];
 
     if (typeof options === 'object') {
@@ -179,16 +175,16 @@ go.string.BitStream = function BitStream(options) {
  * Base62 Coding Space
  * @type String
  */
-go.string.Base62CodingSpace = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+$d.Base62CodingSpace = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
 /**
  * Convert a byte array
  * @param {String} original Byte array
  * @returns {unresolved} Base62 string
  */
-go.string.encodeBase62ToString = function encodeBase62ToString(original) {
+$d.encodeBase62ToString = function encodeBase62ToString(original) {
     var sb = []; // new StringBuilder();
-    var stream = new go.string.BitStream(original); // Set up the BitStream
+    var stream = new $d.BitStream(original); // Set up the BitStream
     var read = []; // Only read 6-bit at a time
     read.push(0);
 
@@ -200,19 +196,19 @@ go.string.encodeBase62ToString = function encodeBase62ToString(original) {
         {
             if ((read[0] >> 3) == 0x1f) // First 5-bit is 11111
             {
-                sb.push(go.string.Base62CodingSpace[61]);
+                sb.push($d.Base62CodingSpace.charAt(61));
                 stream.Seek(-1, 2 /*SeekOrigin.Current*/); // Leave the 6th bit to next group
             } else if ((read[0] >> 3) == 0x1e) // First 5-bit is 11110
             {
-                sb.push(go.string.Base62CodingSpace[60]);
+                sb.push($d.Base62CodingSpace.charAt(60));
                 stream.Seek(-1, 2 /*SeekOrigin.Current*/);
             } else // Encode 6-bit
             {
-                sb.push(go.string.Base62CodingSpace[(read[0] >> 2)]);
+                sb.push($d.Base62CodingSpace.charAt((read[0] >> 2)));
             }
         } else {
             // Padding 0s to make the last bits to 6 bit
-            sb.push(go.string.Base62CodingSpace[(read[0] >> (8 - length))]);
+            sb.push($d.Base62CodingSpace.charAt((read[0] >> (8 - length))));
             break;
         }
     }
@@ -225,17 +221,18 @@ go.string.encodeBase62ToString = function encodeBase62ToString(original) {
  * @param {type} base62 Base62 string
  * @returns {Array} Byte array
  */
-go.string.decodeBase62ToArray = function decodeBase62ToArray(base62) {
+$d.decodeBase62ToArray = function decodeBase62ToArray(base62) {
     // Character count
     var count = 0;
 
     // Set up the BitStream
-    var stream = new go.string.BitStream(base62.length * 6 / 8);
-
-    for (var i in base62) {
-        var c = base62[i];
+    var stream = new $d.BitStream(base62.length * 6 / 8);
+	var len = base62.length;
+    for (var i = 0; i < len; i++) {
+		
+        var c = base62.charAt(i);
         // Look up coding table
-        var index = go.string.Base62CodingSpace.indexOf(c);
+        var index = $d.Base62CodingSpace.indexOf(c);
 
         // If end is reached
         if (count == base62.length - 1) {
@@ -268,16 +265,17 @@ go.string.decodeBase62ToArray = function decodeBase62ToArray(base62) {
  * @param {String} str The data to encode.
  * @returns {String}
  */
-go.string.encodeBase62 = function encodeBase62(str) {
+$d.encodeBase62 = function encodeBase62(str) {
     
     if (typeof str !== 'string' || str === '') {
         return '';
     }
     
     str = str.toString();
-
+	
     var bytes = [];
-    for (var i in str) {
+	var len = str.length;
+    for (var i = 0; i < len; i++) {
         bytes.push(str.charCodeAt(i));
     }
 
@@ -291,7 +289,7 @@ go.string.encodeBase62 = function encodeBase62(str) {
  * @returns {String} Returns the original data or false on failure. 
  * The returned data may be binary.
  */
-go.string.decodeBase62 = function decodeBase62(str) {
+$d.decodeBase62 = function decodeBase62(str) {
     
     if (typeof str !== 'string' || str === '') {
         return '';
@@ -301,7 +299,9 @@ go.string.decodeBase62 = function decodeBase62(str) {
 
     var bytes = this.decodeBase62ToArray(str);
     var sb = [];
-    for (var i in bytes) {
+	var len = bytes.length;
+	
+    for (var i = 0; i < len; i++) {
         sb.push(String.fromCharCode(bytes[i]));
     }
     str = sb.join('');
@@ -323,7 +323,7 @@ go.string.decodeBase62 = function decodeBase62(str) {
      * @returns {String}
      */
     $.encodeBase62 = function encodeBase62(str) {
-        return go.string.encodeBase62(str);
+        return $d.encodeBase62(str);
     };
 
     /**
@@ -333,7 +333,7 @@ go.string.decodeBase62 = function decodeBase62(str) {
      * The returned data may be binary.
      */
     $.decodeBase62 = function decodeBase62(str) {
-        return go.string.decodeBase62(str);
+        return $d.decodeBase62(str);
     };
 
 
