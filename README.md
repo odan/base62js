@@ -16,13 +16,14 @@ https://github.com/renmengye/base62-csharp
 
 Thanks to: renmengye
 
-Example
-=============
+## Example
 
-    // encode
-    var strBase62 = $d.encodeBase62('test123');
-    console.log(strBase62); // T6LpT34oC3
+```js
+// encode
+var base62 = $d.encodeBase62('test123');
+console.log(base62); // T6LpT34oC3
 
-    // decode
-    var strText = $d.decodeBase62(strBase62);
-    console.log(strText); // test123
+// decode
+var text = $d.decodeBase62(base62);
+console.log(text); // test123
+```
