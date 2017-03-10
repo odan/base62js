@@ -34,10 +34,10 @@ console.log(text); // test123
 
 ```js
 // encode
-var base64url = $d.encodeBase64url('test123');
-console.log(base64url); // dGVzdDEyMw
+var base64url = $d.encodeBase64url('test123öäüÿ');
+console.log(base64url); // dGVzdDEyM8O2w6TDvMO_
 
 // decode
 var text = $d.decodeBase64url(base64url);
-console.log(text); // test123
+console.log(text); // test123öäüÿ
 ```
