@@ -1,22 +1,22 @@
 /**
  * Base62 Encoding JavaScript implementation
- * 
+ *
  * @author odan (https://github.com/odan)
  * @license: MIT
- * 
+ *
  * Thanks to: renmengye
  * https://github.com/renmengye/base62-csharp
- * 
- * @example 
- * 
+ *
+ * @example
+ *
  * // encode
  * var strBase62 = $d.encodeBase62('test123');
  * console.log(strBase62);
- * 
+ *
  * // decode
  * var strText = $d.decodeBase62(strBase62);
  * console.log(strText);
- * 
+ *
  */
 
 // Namespace stuff
@@ -51,7 +51,7 @@ $d.BitStream = function BitStream(options) {
      * Bit length of the stream
      * @returns {Number|@pro;length@this.Source}
      */
-    this.Length = function() {
+    this.Length = function () {
         return this.Source.length * 8;
     };
 
@@ -62,7 +62,7 @@ $d.BitStream = function BitStream(options) {
      * @param {integer} count Number of bits to read
      * @returns {integer} Number of bits read
      */
-    this.Read = function(buffer, offset, count) {
+    this.Read = function (buffer, offset, count) {
         // Temporary position cursor
         var tempPos = this.Position;
         tempPos += offset;
@@ -106,23 +106,26 @@ $d.BitStream = function BitStream(options) {
      * @param {integer} origin Position origin
      * @returns {integer} Position after setup
      */
-    this.Seek = function(offset, origin) {
+    this.Seek = function (offset, origin) {
         switch (origin) {
             case (1):
-                /*SeekOrigin.Begin*/ {
-                    this.Position = offset;
-                    break;
-                }
+                /*SeekOrigin.Begin*/
+            {
+                this.Position = offset;
+                break;
+            }
             case (2):
-                /*SeekOrigin.Current*/ {
-                    this.Position += offset;
-                    break;
-                }
+                /*SeekOrigin.Current*/
+            {
+                this.Position += offset;
+                break;
+            }
             case (3):
-                /*SeekOrigin.End*/ {
-                    this.Position = this.Length() + offset;
-                    break;
-                }
+                /*SeekOrigin.End*/
+            {
+                this.Position = this.Length() + offset;
+                break;
+            }
         }
         return this.Position;
     };
@@ -134,12 +137,12 @@ $d.BitStream = function BitStream(options) {
      * @param {type} count
      * @returns {undefined} Number of bits
      */
-    this.Write = function(buffer, offset, count) {
+    this.Write = function (buffer, offset, count) {
         // Temporary position cursor
         var tempPos = this.Position;
         // Buffer byte position and in-byte position
         var readPosCount = offset >> 3,
-                readPosMod = offset - ((offset >> 3) << 3);
+            readPosMod = offset - ((offset >> 3) << 3);
         // Stream byte position and in-byte position
         var posCount = tempPos >> 3;
         var posMod = (tempPos - ((tempPos >> 3) << 3));
@@ -227,9 +230,9 @@ $d.decodeBase62ToArray = function decodeBase62ToArray(base62) {
 
     // Set up the BitStream
     var stream = new $d.BitStream(base62.length * 6 / 8);
-	var len = base62.length;
+    var len = base62.length;
     for (var i = 0; i < len; i++) {
-		
+
         var c = base62.charAt(i);
         // Look up coding table
         var index = $d.Base62CodingSpace.indexOf(c);
@@ -260,62 +263,99 @@ $d.decodeBase62ToArray = function decodeBase62ToArray(base62) {
     return result;
 };
 
+function fixedCharCodeAt(str, idx) {
+    // например, fixedCharCodeAt('\uD800\uDC00', 0); // 65536
+    // например, fixedCharCodeAt('\uD800\uDC00', 1); // false
+    idx = idx || 0;
+    var code = str.charCodeAt(idx);
+    var hi, low;
+
+    // Старшая часть суррогатной пары (последнее число можно изменить на 0xDB7F,
+    // чтобы трактовать старшую часть суррогатной пары в частной плоскости как
+    // одиночный символ)
+    if (0xD800 <= code && code <= 0xDBFF) {
+        hi = code;
+        low = str.charCodeAt(idx + 1);
+        if (isNaN(low)) {
+            throw 'Старшая часть суррогатной пары без следующей младшей в fixedCharCodeAt()';
+        }
+        return ((hi - 0xD800) * 0x400) + (low - 0xDC00) + 0x10000;
+    }
+    if (0xDC00 <= code && code <= 0xDFFF) { // Младшая часть суррогатной пары
+        // Мы возвращаем false, чтобы цикл пропустил эту итерацию, поскольку суррогатная пара
+        // уже обработана вsit в предыдущей итерации
+        return false;
+        /*hi = str.charCodeAt(idx - 1);
+         low = code;
+         return ((hi - 0xD800) * 0x400) + (low - 0xDC00) + 0x10000;*/
+    }
+    return code;
+}
+
+$d.encodeUtf8 = function (s) {
+    return unescape(encodeURIComponent(s));
+}
+
+$d.decodeUtf8 = function (s) {
+    return decodeURIComponent(escape(s));
+}
+
 /**
  * Encodes data with base62
  * @param {String} str The data to encode.
  * @returns {String}
  */
 $d.encodeBase62 = function encodeBase62(str) {
-    
+
     if (typeof str !== 'string' || str === '') {
         return '';
     }
-    
-    str = str.toString();
-	
+
+    str = $d.encodeUtf8(str.toString());
+
     var bytes = [];
-	var len = str.length;
+    var len = str.length;
     for (var i = 0; i < len; i++) {
         bytes.push(str.charCodeAt(i));
     }
-
-    var strReturn = this.encodeBase62ToString(bytes);
-    return strReturn;
+    return this.encodeBase62ToString(bytes);
 };
 
 /**
  * Decodes a base62 encoded data.
  * @param {String} str
- * @returns {String} Returns the original data or false on failure. 
+ * @returns {String} Returns the original data or false on failure.
  * The returned data may be binary.
  */
 $d.decodeBase62 = function decodeBase62(str) {
-    
+
     if (typeof str !== 'string' || str === '') {
         return '';
     }
-    
+
     str = str.toString();
 
     var bytes = this.decodeBase62ToArray(str);
     var sb = [];
-	var len = bytes.length;
-	
+    var len = bytes.length;
+
     for (var i = 0; i < len; i++) {
         sb.push(String.fromCharCode(bytes[i]));
     }
     str = sb.join('');
+    str = $d.decodeUtf8(str);
+
     return str;
 };
 
 /**
  * jQuery Plugin - Base62 Encoding
- * 
- * @example 
+ *
+ * @example
  * var strBase62 = $.encodeBase62('test123');
  * var strText = $.decodeBase62(strBase62);
  */
-(function($) {
+(function ($) {
 
     /**
      * Encodes data with base62
@@ -329,7 +369,7 @@ $d.decodeBase62 = function decodeBase62(str) {
     /**
      * Decodes a base62 encoded data.
      * @param {String} str
-     * @returns {String} Returns the original data or false on failure. 
+     * @returns {String} Returns the original data or false on failure.
      * The returned data may be binary.
      */
     $.decodeBase62 = function decodeBase62(str) {
