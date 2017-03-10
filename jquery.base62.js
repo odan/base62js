@@ -241,7 +241,7 @@ $d.decodeBase62ToArray = function decodeBase62ToArray(base62) {
         if (count == base62.length - 1) {
             // Check if the ending is good
             var mod = (stream.Position % 8);
-            if(mod > 0) {
+            if (mod > 0) {
                 stream.Write([(index << (mod))], 0, 8 - mod);
             }
         } else {
