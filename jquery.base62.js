@@ -263,35 +263,6 @@ $d.decodeBase62ToArray = function decodeBase62ToArray(base62) {
     return result;
 };
 
-function fixedCharCodeAt(str, idx) {
-    // например, fixedCharCodeAt('\uD800\uDC00', 0); // 65536
-    // например, fixedCharCodeAt('\uD800\uDC00', 1); // false
-    idx = idx || 0;
-    var code = str.charCodeAt(idx);
-    var hi, low;
-
-    // Старшая часть суррогатной пары (последнее число можно изменить на 0xDB7F,
-    // чтобы трактовать старшую часть суррогатной пары в частной плоскости как
-    // одиночный символ)
-    if (0xD800 <= code && code <= 0xDBFF) {
-        hi = code;
-        low = str.charCodeAt(idx + 1);
-        if (isNaN(low)) {
-            throw 'Старшая часть суррогатной пары без следующей младшей в fixedCharCodeAt()';
-        }
-        return ((hi - 0xD800) * 0x400) + (low - 0xDC00) + 0x10000;
-    }
-    if (0xDC00 <= code && code <= 0xDFFF) { // Младшая часть суррогатной пары
-        // Мы возвращаем false, чтобы цикл пропустил эту итерацию, поскольку суррогатная пара
-        // уже обработана вsit в предыдущей итерации
-        return false;
-        /*hi = str.charCodeAt(idx - 1);
-         low = code;
-         return ((hi - 0xD800) * 0x400) + (low - 0xDC00) + 0x10000;*/
-    }
-    return code;
-}
-
 $d.encodeUtf8 = function (s) {
     return unescape(encodeURIComponent(s));
 }
