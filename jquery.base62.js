@@ -340,7 +340,8 @@ $d.decodeBase62 = function decodeBase62(str) {
  * @returns {string}
  */
 $d.encodeBase64url = function (str) {
-    str = window.btoa($d.encodeUtf8(str));
+    str = $d.encodeUtf8(str);
+    str = window.btoa(str);
     str = str.replace(/\+/g, '-');
     str = str.replace(new RegExp('/', 'g'), '_');
     var result = str.replace(new RegExp('=', 'g'), '');
@@ -354,7 +355,7 @@ $d.encodeBase64url = function (str) {
  * @returns {string}
  */
 $d.decodeBase64url = function (str) {
-    str += new Array((4 - (str.length % 4)) + 1).join("=");
+    var padding = new Array(4 - (str.length % 4)).join("=");
     str = str.replace(new RegExp('-', 'g'), '+');
     str = str.replace(new RegExp('_', 'g'), '/');
     var result = window.atob(str);

@@ -95,15 +95,36 @@ testBase64EncodeDecode();
 
 function testBase64EncodeDecode() {
     var source = 'пример текста на кириллице';
-    //console.log("base64url source: " + source);
+    console.log("base64url source: " + source);
 
     var enc = $d.encodeBase64url(source);
-    //console.log("base64url encoded: " + enc);
+    console.log("base64url encoded: " + enc);
+
+    test("encode base64url cyrillic", function () {
+        ok(enc === '0L_RgNC40LzQtdGAINGC0LXQutGB0YLQsCDQvdCwINC60LjRgNC40LvQu9C40YbQtQ', "OK");
+    });
 
     var dec = $d.decodeBase64url(enc);
-    //console.log("base64url decoded: " + dec);
+    console.log("base64url decoded: " + dec);
 
-    test("encode/decode base64url", function () {
+    test("decode base64url cyrillic", function () {
         ok(source === dec, "OK");
+    });
+
+    var source2 = 'test123öäüÿ';
+    console.log("base64url source: " + source2);
+
+    var enc2 = $d.encodeBase64url(source2);
+    console.log("base64url encoded: " + enc2);
+
+    test("encode base64url", function () {
+        ok(enc2 === 'dGVzdDEyM8O2w6TDvMO_', "OK");
+    });
+
+    var dec2 = $d.decodeBase64url(enc2);
+    console.log("base64url decoded: " + dec2);
+
+    test("decode base64url", function () {
+        ok(source2 === dec2, "OK");
     });
 }
