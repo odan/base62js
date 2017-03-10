@@ -23,8 +23,6 @@ test("encode string: null", function () {
 });
 
 test("encode string: test123", function () {
-    debugger;
-    console.log($d.encodeBase62('test123'));
     ok($d.encodeBase62('test123') === "T6LpT34oC3", "OK");
 });
 
@@ -85,15 +83,27 @@ testCyrillicCharacters();
 
 function testCyrillicCharacters() {
     var source = 'пример текста на кириллице';
-    console.log(source);
-
     var enc = $d.encodeBase62(source);
-    console.log(enc);
-
     var dec = $d.decodeBase62(enc);
-    console.log(dec);
 
     test("encode/decode cyrillic characters", function () {
+        ok(source === dec, "OK");
+    });
+}
+
+testBase64EncodeDecode();
+
+function testBase64EncodeDecode() {
+    var source = 'пример текста на кириллице';
+    //console.log("base64url source: " + source);
+
+    var enc = $d.encodeBase64url(source);
+    //console.log("base64url encoded: " + enc);
+
+    var dec = $d.decodeBase64url(enc);
+    //console.log("base64url decoded: " + dec);
+
+    test("encode/decode base64url", function () {
         ok(source === dec, "OK");
     });
 }

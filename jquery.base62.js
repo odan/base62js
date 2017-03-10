@@ -320,6 +320,35 @@ $d.decodeBase62 = function decodeBase62(str) {
 };
 
 /**
+ * Encode base64 url.
+ *
+ * @param str
+ * @returns {string}
+ */
+$d.encodeBase64url = function (str) {
+    str = window.btoa($d.encodeUtf8(str));
+    str = str.replace(/\+/g, '-');
+    str = str.replace(new RegExp('/', 'g'), '_');
+    var result = str.replace(new RegExp('=', 'g'), '');
+    return result;
+};
+
+/**
+ * Decode Base64 url.
+ *
+ * @param str
+ * @returns {string}
+ */
+$d.decodeBase64url = function (str) {
+    str += new Array((4 - (str.length % 4)) + 1).join("=");
+    str = str.replace(new RegExp('-', 'g'), '+');
+    str = str.replace(new RegExp('_', 'g'), '/');
+    var result = window.atob(str);
+    result = $d.decodeUtf8(result);
+    return result;
+};
+
+/**
  * jQuery Plugin - Base62 Encoding
  *
  * @example
@@ -329,7 +358,8 @@ $d.decodeBase62 = function decodeBase62(str) {
 (function ($) {
 
     /**
-     * Encodes data with base62
+     * Encodes data with base62.
+     *
      * @param {String} str The data to encode.
      * @returns {String}
      */
@@ -339,6 +369,7 @@ $d.decodeBase62 = function decodeBase62(str) {
 
     /**
      * Decodes a base62 encoded data.
+     *
      * @param {String} str
      * @returns {String} Returns the original data or false on failure.
      * The returned data may be binary.
@@ -347,5 +378,25 @@ $d.decodeBase62 = function decodeBase62(str) {
         return $d.decodeBase62(str);
     };
 
+    /**
+     * Encodes data with base64url.
+     *
+     * @param {String} str The data to encode.
+     * @returns {String}
+     */
+    $.encodeBase64url = function encodeBase64url(str) {
+        return $d.encodeBase64url(str);
+    };
+
+    /**
+     * Decodes a base64url encoded data.
+     *
+     * @param {String} str
+     * @returns {String} Returns the original data or false on failure.
+     * The returned data may be binary.
+     */
+    $.decodeBase64url = function decodeBase64url(str) {
+        return $d.decodeBase64url(str);
+    };
 
 })(jQuery);
