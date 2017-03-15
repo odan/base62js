@@ -245,16 +245,6 @@ $d.decodeBase62ToArray = function decodeBase62ToArray(base62) {
         if (count == base62.length - 1) {
             // Check if the ending is good
             var mod = (stream.Position % 8);
-
-            if (mod == 0) {
-                // InvalidDataException
-                throw new Error("An extra character was found");
-            }
-            if ((index >> (8 - mod)) > 0) {
-                // InvalidDataException
-                throw new Error("Invalid ending character was found");
-            }
-
             stream.Write([(index << (mod))], 0, 8 - mod);
         } else {
             // If 60 or 61 then only write 5 bits to the stream, otherwise 6 bits.
