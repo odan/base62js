@@ -31,7 +31,7 @@ QUnit.test("encode string: testValue", function (assert) {
     var str = "testValue";
     var enc = $d.encodeBase62('testValue');
     var dec = $d.decodeBase62(enc);
-    assert.equal(enc, "T6LpT5PXR7Lb0", "OK");
+    assert.equal(enc, "T6LpT5PXR7Lb", "OK");
     assert.equal(enc, enc, "OK");
 });
 
