@@ -209,10 +209,6 @@ $d.encodeBase62ToString = function encodeBase62ToString(original) {
             {
                 sb.push($d.Base62CodingSpace.charAt((read[0] >> 2)));
             }
-            //else if (length == 0)                           // Reached the end completely
-            //{
-            //    break;
-            //}
         } else {
             // Padding 0s to make the last bits to 6 bit
             sb.push($d.Base62CodingSpace.charAt((read[0] >> (8 - length))));
